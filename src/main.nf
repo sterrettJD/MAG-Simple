@@ -8,13 +8,14 @@ include { SPADES } from 'nf-core/spades'
 include { PROKKA } from 'nf-core/prokka'
 
 workflow {
-    params.reads = 'reads/*.fastq.gz' // Adjust as needed
+    params.reads = 'reads/*.fastq.gz' // Default value, can be overridden
+    params.host_index = '/path/to/host_index' // Default value, can be overridden
 
     Channel.fromPath(params.reads)
         | FASTQC(input: it) 
         | BOWTIE2(
             input: it, 
-            index: file('/path/to/host_index'), 
+            index: file(params.host_index), 
             unaligned: true
         ) 
         | SPADES(input: it)
