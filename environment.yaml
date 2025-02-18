@@ -1,0 +1,12 @@
+name: MAG-simple-nf
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python
+  - pip
+  - nextflow
+  - pip:
+      - nf-core
