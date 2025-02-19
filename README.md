@@ -23,7 +23,7 @@ cd ..
 ## Running the pipeline
 To run the pipeline locally, run:
 ```
-nextflow run main.nf -profile cluster
+nextflow run main.nf
 ```
 
 
