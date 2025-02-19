@@ -8,9 +8,6 @@ include { SPADES } from './modules/nf-core/spades'
 include { PROKKA } from './modules/nf-core/prokka'
 
 workflow {
-    params.host_index = './work/host_index' // Default value, can be overridden
-    params.metadata = './work/metadata.csv'   // Path to metadata CSV file
-
     // Read metadata from CSV
     meta_ch = Channel.fromPath(params.metadata)
                      .splitCsv(header: true, sep: ',')
@@ -18,23 +15,22 @@ workflow {
                      tuple( 
                         [ id: row.sample_id, 
                         single_end: row.single_end.toBoolean() ],  
-                        file(row.forward),  
-                        file(row.reverse) ?: null // Handles single-end case
+                        [file(row.forward),  file(row.reverse)]
                     ) 
     }
 
     // Create a meta channel (metadata for each sample)
-    reads_ch = meta_ch.map { meta, fwd, rev -> tuple(fwd, rev) }
-    pure_meta = meta_ch.map { meta, fwd, rev -> meta }
+    reads_ch = meta_ch.map { meta, files -> files }
+    pure_meta = meta_ch.map { meta, files -> meta }
     
     // FASTQC analysis
-    FASTQC(reads_ch)
+    FASTQC(meta_ch)
 
     // Pass the required inputs to BOWTIE2_ALIGN
     BOWTIE2_ALIGN(
-        pure_meta,            // Metadata (sample ID, single_end flag)
-        reads_ch,           // FASTQ reads
-        file(params.host_index), // Bowtie2 index
+        meta_ch,            // Metadata (sample ID, single_end flag)
+        [pure_meta, file(params.host_index)], // Bowtie2 index
+        [pure_meta, file(params.host_genome)], // Host FASTA
         true,               // Output unaligned reads
         false               // Do not sort BAM
     )
