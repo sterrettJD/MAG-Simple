@@ -1,0 +1,1 @@
+nextflow run ../src --dry-run -params-file params.yaml -profile cluster

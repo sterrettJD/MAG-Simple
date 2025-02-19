@@ -1,0 +1,3 @@
+    metadata: ./metadata.csv
+    host_genome: ./work/ref/host_genome.fasta
+    host_index: ./work/ref/host_index/index.*.ebwt
