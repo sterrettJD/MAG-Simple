@@ -2,9 +2,10 @@
 
 nextflow.enable.dsl=2
 
+include { FASTP } from './modules/nf-core/fastp/main'
 include { FASTQC } from './modules/nf-core/fastqc'
 include { BOWTIE2_ALIGN } from './modules/nf-core/bowtie2/align'
-include { SPADES } from './modules/nf-core/spades'
+include { MEGAHIT } from './modules/nf-core/megahit/main'
 include { PROKKA } from './modules/nf-core/prokka'
 
 workflow {
@@ -23,12 +24,19 @@ workflow {
     reads_ch = meta_ch.map { meta, files -> files }
     pure_meta = meta_ch.map { meta, files -> meta }
     
-    // FASTQC analysis
-    FASTQC(meta_ch)
+    // Trim adapters and low quality regions from reads
+    FASTP(meta_ch, 
+          file(params.adapters),
+          false,
+          false,
+          false)
+    
+    // FASTQC on trimmed reads
+    FASTQC(FASTP.out.reads)
 
-    // Pass the required inputs to BOWTIE2_ALIGN
+    // Align trimmed reads to host genome
     BOWTIE2_ALIGN(
-        meta_ch,            // Metadata (sample ID, single_end flag)
+        FASTP.out.reads,
         [pure_meta, file(params.host_index)], // Bowtie2 index
         [pure_meta, file(params.host_genome)], // Host FASTA
         true,               // Output unaligned reads
@@ -37,7 +45,7 @@ workflow {
 
 /*
 
-        | SPADES(input: it)
-        | PROKKA(input: it)
+        MEGAHIT()
+        PROKKA()
     */
 }
