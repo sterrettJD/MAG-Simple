@@ -13,9 +13,10 @@ conda activate mag_simple
 Next, let's install the modules we need from nf-core.
 ```
 cd src
+nf-core modules install fastp
 nf-core modules install fastqc
 nf-core modules install bowtie2/align
-nf-core modules install spades
+nf-core modules install megahit
 nf-core modules install prokka
 cd ..
 ```
